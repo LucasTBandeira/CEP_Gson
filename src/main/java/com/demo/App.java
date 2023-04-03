@@ -73,12 +73,11 @@ public class App {
             HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.of(1, MINUTES)).build();
             HttpRequest httpRequest = HttpRequest.newBuilder().GET().uri(URI.create(url)).build();
             HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            String st = httpResponse.body().toString();
 
-            if (st.contains("Http 400")) {
+            if (httpResponse.statusCode() == 400) {
                 System.out.println("Formato do CEP inválido. Por favor, tente novamente.");
                 valCEP();
-            } else if (st.contains("\"erro\": true")) {
+            } else if (httpResponse.body().contains("\"erro\": true")) {
                 System.out.println("Cep inexistente. Por favor, tente novamente.");
                 valCEP();
             } else {
@@ -98,7 +97,6 @@ public class App {
     }
 
     public static void searchCEP() {
-        // Quando houver espaços, utilizar %20
         System.out.print("Digite o estado: ");
         String estado = in.nextLine();
         estado = estado.replaceAll(" ", "%20");
@@ -115,9 +113,10 @@ public class App {
             HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.of(1, MINUTES)).build();
             HttpRequest httpRequest = HttpRequest.newBuilder().GET().uri(URI.create(url)).build();
             HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            java.lang.reflect.Type collectionType = new TypeToken<Collection<Cep>>(){}.getType();
+            java.lang.reflect.Type collectionType = new TypeToken<Collection<Cep>>() {
+            }.getType();
             Collection<Cep> ceps = gson.fromJson(httpResponse.body(), collectionType);
-            
+
             if (httpResponse.statusCode() == 400) {
                 System.out.println("Formato das informações inválido. Por favor, tente novamente.");
                 searchCEP();
